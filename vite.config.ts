@@ -16,7 +16,7 @@ export default defineApplicationConfig({
     server: {
       proxy: {
         '/sys-api': {
-          target: 'http://localhost:9100',
+          target: 'http://backend:9100',
           changeOrigin: true,
           ws: true,
           rewrite: (path) => path.replace(new RegExp(`^/sys-api`), ''),
@@ -24,13 +24,13 @@ export default defineApplicationConfig({
           // secure: false
         },
         '/fms-api': {
-          target: 'http://localhost:9102',
+          target: 'http://backend:9102',
           changeOrigin: true,
           ws: true,
           rewrite: (path) => path.replace(new RegExp(`^/fms-api`), ''),
         },
         '/mms-api': {
-          target: 'http://localhost:9104',
+          target: 'http://backend:9104',
           changeOrigin: true,
           ws: true,
           rewrite: (path) => path.replace(new RegExp(`^/mms-api`), ''),
