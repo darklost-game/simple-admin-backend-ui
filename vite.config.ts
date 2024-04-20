@@ -23,6 +23,12 @@ export default defineApplicationConfig({
           // only https
           // secure: false
         },
+        '/agent-api': {
+          target: 'http://backend:9300',
+          changeOrigin: true,
+          ws: true,
+          rewrite: (path) => path.replace(new RegExp(`^/agent-api`), ''),
+        },
         '/fms-api': {
           target: 'http://backend:9102',
           changeOrigin: true,
