@@ -24,7 +24,8 @@
   import { useDictionaryStore } from '@/store/modules/dictionary';
   import { DefaultOptionType } from 'ant-design-vue/lib/select';
   import { useRuleFormItem } from '@/hooks/component/useFormItem';
-
+  import type { SelectValue } from 'ant-design-vue/es/select';
+  import { isFunction } from '@/utils/is';
   export default defineComponent({
     name: 'DictionarySelect',
     components: {
@@ -34,8 +35,12 @@
     inheritAttrs: false,
     props: {
       dictionaryName: propTypes.string.def(''),
-      value: [String, Number],
+      value: { type: [Array, Object, String, Number] as PropType<SelectValue> },
       cache: propTypes.bool.def(true),
+      onOpitions: {
+        type: Function as PropType<(options?: DefaultOptionType[]) => DefaultOptionType[]|undefined>,
+        default: null,
+      },
     },
     emits: ['options-change', 'change', 'update:value'],
     setup(props, { emit }) {
@@ -64,7 +69,12 @@
         const dictStore = useDictionaryStore();
         const dictData = await dictStore.getDictionary(props.dictionaryName, props.cache);
         if (dictData != null) {
-          options.value = dictData.data;
+            const onOpitions = props.onOpitions;
+          if (isFunction(onOpitions)) {
+              options.value = onOpitions(dictData.data);
+          } else {
+             options.value = dictData.data;
+          }
         }
         loading.value = false;
       }

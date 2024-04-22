@@ -49,6 +49,7 @@ export default {
   // action
   start: '开始',
   stop: '停止',
+  edit: '编辑',
   delete: '删除',
   submit: '提交',
   audit: '审核中',

@@ -2,8 +2,11 @@ import { BasicColumn, FormSchema } from '@/components/Table';
 import { useI18n } from '@/hooks/web/useI18n';
 import { formatToDateTime } from '@/utils/dateUtil';
 import { updateAgentUser } from '@/api/agent/user';
-import { Switch } from 'ant-design-vue';
+import { Switch,Tag } from 'ant-design-vue';
 import { h } from 'vue';
+import { DefaultOptionType } from 'ant-design-vue/lib/select';
+import { useMessage } from '@/hooks/web/useMessage';
+import { isString } from '@/utils/is';
 
 const { t } = useI18n();
 
@@ -18,56 +21,75 @@ export const columns: BasicColumn[] = [
     dataIndex: 'nickname',
     width: 100,
   },
-  {
-    title: t('agent.user.password'),
-    dataIndex: 'password',
-    width: 100,
-  },
-  {
-    title: t('agent.user.description'),
-    dataIndex: 'description',
-    width: 100,
-  },
-  {
-    title: t('agent.user.homePath'),
-    dataIndex: 'homePath',
-    width: 100,
-  },
-  {
-    title: t('agent.user.roleIds'),
-    dataIndex: 'roleIds',
-    width: 100,
-  },
-  {
-    title: t('agent.user.mobile'),
-    dataIndex: 'mobile',
-    width: 100,
-  },
-  {
-    title: t('agent.user.email'),
-    dataIndex: 'email',
-    width: 100,
-  },
-  {
-    title: t('agent.user.avatar'),
-    dataIndex: 'avatar',
-    width: 100,
-  },
-  {
-    title: t('agent.user.departmentId'),
-    dataIndex: 'departmentId',
-    width: 100,
-  },
-  {
-    title: t('agent.user.positionIds'),
-    dataIndex: 'positionIds',
-    width: 100,
-  },
+  // {
+  //   title: t('agent.user.password'),
+  //   dataIndex: 'password',
+  //   width: 100,
+  // },
+  // {
+  //   title: t('agent.user.description'),
+  //   dataIndex: 'description',
+  //   width: 100,
+  // },
+  // {
+  //   title: t('agent.user.homePath'),
+  //   dataIndex: 'homePath',
+  //   width: 100,
+  // },
+  // {
+  //   title: t('agent.user.roleIds'),
+  //   dataIndex: 'roleIds',
+  //   width: 100,
+  // },
+  // {
+  //   title: t('agent.user.mobile'),
+  //   dataIndex: 'mobile',
+  //   width: 100,
+  // },
+  // {
+  //   title: t('agent.user.email'),
+  //   dataIndex: 'email',
+  //   width: 100,
+  // },
+  // {
+  //   title: t('agent.user.avatar'),
+  //   dataIndex: 'avatar',
+  //   width: 100,
+  // },
+  // {
+  //   title: t('agent.user.departmentId'),
+  //   dataIndex: 'departmentId',
+  //   width: 100,
+  // },
+  // {
+  //   title: t('agent.user.positionIds'),
+  //   dataIndex: 'positionIds',
+  //   width: 100,
+  // },
   {
     title: t('agent.user.totpSecret'),
     dataIndex: 'totpSecret',
     width: 100,
+    customRender: ({ record }) => {
+      let totpSecretText = '';
+      let totpSecretColor = 'red';
+      if (isString(record.totpSecret)&&record.totpSecret.length>0) {
+        totpSecretText = t('agent.user.totpSecretAreadyBind');
+        totpSecretColor = 'green';
+      } else {
+        totpSecretText = t('agent.user.totpSecretNotBind');
+        totpSecretColor = 'red';
+      }
+      return h(
+        Tag,
+        {
+          color: totpSecretColor,
+        },
+        ()=>totpSecretText,
+      );
+    },
   },
+  
   {
     title: t('agent.user.lv'),
     dataIndex: 'lv',
@@ -96,7 +118,7 @@ export const columns: BasicColumn[] = [
   {
     title: t('common.status'),
     dataIndex: 'status',
-    width: 50,
+    width: 100,
     customRender: ({ record }) => {
       if (!Reflect.has(record, 'pendingStatus')) {
         record.pendingStatus = false;
@@ -107,6 +129,12 @@ export const columns: BasicColumn[] = [
         unCheckedChildren: t('common.off'),
         loading: record.pendingStatus,
         onChange(checked, _) {
+          // const { createMessage } = useMessage();
+          // if (record.id == 1) {
+          //   createMessage.warn(t('sys.role.adminStatusChangeForbidden'));
+          //   return;
+          // }
+
           record.pendingStatus = true;
           const newStatus = checked ? 1 : 2;
           updateAgentUser({ id: record.id, status: newStatus })
@@ -123,7 +151,7 @@ export const columns: BasicColumn[] = [
   {
     title: t('common.createTime'),
     dataIndex: 'createdAt',
-    width: 70,
+    width: 100,
     customRender: ({ record }) => {
       return formatToDateTime(record.createdAt);
     },
@@ -132,12 +160,55 @@ export const columns: BasicColumn[] = [
 
 export const searchFormSchema: FormSchema[] = [
   {
+    field: 'lv',
+    label: t('agent.user.lv'),
+    component: 'DictionarySelect',
+    // defaultValue: 0,
+    componentProps: {
+      dictionaryName: 'agentLv',
+      onOpitions: (options?: DefaultOptionType[]) => { // Add type annotation to options parameter
+    
+        options?.map((item) => {
+          item.value = Number(item.value);
+         return item;
+        });
+        return options;
+      }
+    },
+    colProps: { span: 8 },
+  },
+  {
+    field: 'parentUuid',
+    label: t('agent.user.parentUuid'),
+    component: 'Input',
+    colProps: { span: 8 },
+  },
+  {
     field: 'username',
     label: t('agent.user.username'),
     component: 'Input',
     colProps: { span: 8 },
     rules: [{ max: 20 }],
   },
+  {
+    field: 'lv1Uuid',
+    label: t('agent.user.lv1Uuid'),
+    component: 'Input',
+    colProps: { span: 8 },
+  },
+  {
+    field: 'lv2Uuid',
+    label: t('agent.user.lv2Uuid'),
+    component: 'Input',
+    colProps: { span: 8 },
+  },
+  {
+    field: 'lv3Uuid',
+    label: t('agent.user.lv3Uuid'),
+    component: 'Input',
+    colProps: { span: 8 },
+  },
+
   {
     field: 'nickname',
     label: t('agent.user.nickname'),
@@ -159,54 +230,25 @@ export const searchFormSchema: FormSchema[] = [
     colProps: { span: 8 },
     rules: [{ max: 100 }],
   },
-  {
-    field: 'roleIds',
-    label: t('agent.user.roleIds'),
-    component: 'Input',
-    colProps: { span: 8 },
-  },
-  {
-    field: 'departmentId',
-    label: t('agent.user.departmentId'),
-    component: 'Input',
-    colProps: { span: 8 },
-  },
-  {
-    field: 'positionId',
-    label: t('agent.user.positionId'),
-    component: 'Input',
-    colProps: { span: 8 },
-  },
-  {
-    field: 'lv',
-    label: t('agent.user.lv'),
-    component: 'Input',
-    colProps: { span: 8 },
-  },
-  {
-    field: 'parentUuid',
-    label: t('agent.user.parentUuid'),
-    component: 'Input',
-    colProps: { span: 8 },
-  },
-  {
-    field: 'lv1Uuid',
-    label: t('agent.user.lv1Uuid'),
-    component: 'Input',
-    colProps: { span: 8 },
-  },
-  {
-    field: 'lv2Uuid',
-    label: t('agent.user.lv2Uuid'),
-    component: 'Input',
-    colProps: { span: 8 },
-  },
-  {
-    field: 'lv3Uuid',
-    label: t('agent.user.lv3Uuid'),
-    component: 'Input',
-    colProps: { span: 8 },
-  },
+  // {
+  //   field: 'roleIds',
+  //   label: t('agent.user.roleIds'),
+  //   component: 'Input',
+  //   colProps: { span: 8 },
+  // },
+  // {
+  //   field: 'departmentId',
+  //   label: t('agent.user.departmentId'),
+  //   component: 'Input',
+  //   colProps: { span: 8 },
+  // },
+  // {
+  //   field: 'positionId',
+  //   label: t('agent.user.positionId'),
+  //   component: 'Input',
+  //   colProps: { span: 8 },
+  // },
+  
 ];
 
 export const formSchema: FormSchema[] = [

@@ -49,6 +49,7 @@ export default {
   // action
   start: 'Start',
   stop: 'Stop',
+  edit: 'Edit',
   delete: 'Delete',
   submit: 'Submit',
   audit: 'Under review',

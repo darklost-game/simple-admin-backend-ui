@@ -23,11 +23,33 @@
             :actions="[
               {
                 icon: 'clarity:note-edit-line',
+                tooltip: t('common.edit'),
                 onClick: handleEdit.bind(null, record),
+              },
+              {
+                icon: 'bx:log-out-circle',
+                color: 'error',
+                tooltip: t('sys.user.forceLoggingOut'),
+                popConfirm: {
+                  title: t('sys.user.forceLoggingOut') + '?',
+                  placement: 'left',
+                  confirm: handleLogout.bind(null, record),
+                },
+              },
+              {
+                icon: 'bx:reset',
+                color: 'warning',
+                tooltip: t('agent.user.totpSecretReset'),
+                popConfirm: {
+                  title: t('agent.user.totpSecretReset') + '?',
+                  placement: 'left',
+                  confirm: handleTotpReset.bind(null, record),
+                },
               },
               {
                 icon: 'ant-design:delete-outlined',
                 color: 'error',
+                tooltip: t('common.delete'),
                 popConfirm: {
                   title: t('common.deleteConfirm'),
                   placement: 'left',
@@ -54,7 +76,8 @@
   import { useI18n } from 'vue-i18n';
 
   import { columns, searchFormSchema } from './user.data';
-  import { getAgentUserList, deleteAgentUser } from '@/api/agent/user';
+  import { getAgentUserList, deleteAgentUser,updateAgentUser } from '@/api/agent/user';
+  import { isString } from '@/utils/is';
 
   export default defineComponent({
     name: 'UserManagement',
@@ -77,13 +100,15 @@
         showTableSetting: true,
         bordered: true,
         showIndexColumn: false,
+        showSummary:true,
         clickToRowSelect: false,
         actionColumn: {
-          width: 30,
+          width: 120,
           title: t('common.action'),
           dataIndex: 'action',
-          fixed: undefined,
+          fixed: 'right',
         },
+        scroll: { x: 1500 },
         rowKey: 'id',
         rowSelection: {
           type: 'checkbox',
@@ -135,6 +160,33 @@
         await reload();
       }
 
+      async function handleLogout(record: Recordable) {
+        console.log('handleLogout', record);
+        // const result = await logout(record.id);
+
+        // if (result.code === 0) await reload();
+      }
+
+      async function handleTotpReset(record: Recordable) {
+        console.log('handleTotpReset', record);
+        if (isString(record.totpSecret) && record.totpSecret.length > 0) {
+          const result = await updateAgentUser({ id: record.id, totpSecret: '' })
+          if (result.code === 0) {
+            await reload();
+          }
+        } else { 
+
+          console.log('2fa not bind can not reset', record);
+           // const { createMessage } = useMessage();
+          // if (record.id == 1) {
+          //   createMessage.warn(t('sys.role.adminStatusChangeForbidden'));
+          //   return;
+          // }
+        }
+        
+        
+      }
+
       return {
         t,
         registerTable,
@@ -144,6 +196,8 @@
         handleDelete,
         handleSuccess,
         handleBatchDelete,
+        handleLogout,
+        handleTotpReset,
         showDeleteButton,
       };
     },
