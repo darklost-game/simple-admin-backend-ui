@@ -13,43 +13,21 @@
         </Button>
       </template>
       <template #toolbar>
-        <a-button type="primary" @click="handleCreate">
-          {{ t('agent.user.addUser') }}
-        </a-button>
+        <!-- <a-button type="primary" @click="handleCreate">
+          {{ t('agent.token.addToken') }}
+        </a-button> -->
       </template>
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'action'">
           <TableAction
             :actions="[
-              {
-                icon: 'clarity:note-edit-line',
-                tooltip: t('common.edit'),
-                onClick: handleEdit.bind(null, record),
-              },
-              {
-                icon: 'bx:log-out-circle',
-                color: 'error',
-                tooltip: t('sys.user.forceLoggingOut'),
-                popConfirm: {
-                  title: t('sys.user.forceLoggingOut') + '?',
-                  placement: 'left',
-                  confirm: handleLogout.bind(null, record),
-                },
-              },
-              {
-                icon: 'bx:reset',
-                color: 'warning',
-                tooltip: t('agent.user.totpSecretReset'),
-                popConfirm: {
-                  title: t('agent.user.totpSecretReset') + '?',
-                  placement: 'left',
-                  confirm: handleTotpReset.bind(null, record),
-                },
-              },
+              // {
+              //   icon: 'clarity:note-edit-line',
+              //   onClick: handleEdit.bind(null, record),
+              // },
               {
                 icon: 'ant-design:delete-outlined',
                 color: 'error',
-                tooltip: t('common.delete'),
                 popConfirm: {
                   title: t('common.deleteConfirm'),
                   placement: 'left',
@@ -61,7 +39,7 @@
         </template>
       </template>
     </BasicTable>
-    <UserDrawer @register="registerDrawer" @success="handleSuccess" />
+    <TokenDrawer @register="registerDrawer" @success="handleSuccess" />
   </div>
 </template>
 <script lang="ts">
@@ -72,17 +50,15 @@
   import { Button } from '@/components/Button';
 
   import { useDrawer } from '@/components/Drawer';
-  import UserDrawer from './UserDrawer.vue';
+  import TokenDrawer from './TokenDrawer.vue';
   import { useI18n } from 'vue-i18n';
 
-  import { columns, searchFormSchema } from './user.data';
-  import { getAgentUserList, deleteAgentUser, updateAgentUser } from '@/api/agent/user';
-  import { agentLogout } from '@/api/agent/token';
-  import { isString } from '@/utils/is';
+  import { columns, searchFormSchema } from './token.data';
+  import { getAgentTokenList, deleteAgentToken } from '@/api/agent/token';
 
   export default defineComponent({
-    name: 'UserManagement',
-    components: { BasicTable, UserDrawer, TableAction, Button },
+    name: 'TokenManagement',
+    components: { BasicTable, TokenDrawer, TableAction, Button },
     setup() {
       const { t } = useI18n();
       const selectedIds = ref<number[] | string[]>();
@@ -90,8 +66,8 @@
 
       const [registerDrawer, { openDrawer }] = useDrawer();
       const [registerTable, { reload }] = useTable({
-        title: t('agent.user.userList'),
-        api: getAgentUserList,
+        title: t('agent.token.tokenList'),
+        api: getAgentTokenList,
         columns,
         formConfig: {
           labelWidth: 120,
@@ -101,15 +77,13 @@
         showTableSetting: true,
         bordered: true,
         showIndexColumn: false,
-        showSummary: true,
         clickToRowSelect: false,
         actionColumn: {
-          width: 120,
+          width: 30,
           title: t('common.action'),
           dataIndex: 'action',
-          fixed: 'right',
+          fixed: undefined,
         },
-        scroll: { x: 1500 },
         rowKey: 'id',
         rowSelection: {
           type: 'checkbox',
@@ -134,7 +108,7 @@
       }
 
       async function handleDelete(record: Recordable) {
-        const result = await deleteAgentUser({ ids: [record.id] });
+        const result = await deleteAgentToken({ ids: [record.id] });
         if (result.code === 0) {
           await reload();
         }
@@ -145,7 +119,7 @@
           title: t('common.deleteConfirm'),
           icon: createVNode(ExclamationCircleOutlined),
           async onOk() {
-            const result = await deleteAgentUser({ ids: selectedIds.value as string[] });
+            const result = await deleteAgentToken({ ids: selectedIds.value as string[] });
             if (result.code === 0) {
               showDeleteButton.value = false;
               await reload();
@@ -161,32 +135,6 @@
         await reload();
       }
 
-      async function handleLogout(record: Recordable) {
-        console.log('handleLogout', record);
-        const result = await agentLogout(record.id);
-
-        if (result.code === 0) {
-          await reload();
-        }
-      }
-
-      async function handleTotpReset(record: Recordable) {
-        console.log('handleTotpReset', record);
-        if (isString(record.totpSecret) && record.totpSecret.length > 0) {
-          const result = await updateAgentUser({ id: record.id, totpSecret: '' });
-          if (result.code === 0) {
-            await reload();
-          }
-        } else {
-          console.log('2fa not bind can not reset', record);
-          // const { createMessage } = useMessage();
-          // if (record.id == 1) {
-          //   createMessage.warn(t('sys.role.adminStatusChangeForbidden'));
-          //   return;
-          // }
-        }
-      }
-
       return {
         t,
         registerTable,
@@ -196,8 +144,6 @@
         handleDelete,
         handleSuccess,
         handleBatchDelete,
-        handleLogout,
-        handleTotpReset,
         showDeleteButton,
       };
     },

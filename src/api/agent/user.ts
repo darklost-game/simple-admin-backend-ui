@@ -1,7 +1,7 @@
 import { defHttp } from '@/utils/http/axios';
 import { ErrorMessageMode } from '/#/axios';
 import { BaseDataResp, BaseListReq, BaseResp, BaseUUIDsReq, BaseUUIDReq } from '@/api/model/baseModel';
-import { AgentUserInfo, AgentUserListResp } from './model/AgentUserModel';
+import { AgentUserInfo, AgentUserListResp } from './model/agentUserModel';
 
 enum Api {
   CreateAgentUser = '/agent-api/agent/user/create',

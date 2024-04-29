@@ -1,12 +1,12 @@
 import { BasicColumn, FormSchema } from '@/components/Table';
 import { useI18n } from '@/hooks/web/useI18n';
 import { formatToDateTime } from '@/utils/dateUtil';
-import { updateAgentUser } from '@/api/agent/user';
+import { updateAgentUser,getAgentUserList } from '@/api/agent/user';
 import { Switch,Tag } from 'ant-design-vue';
 import { h } from 'vue';
 import { DefaultOptionType } from 'ant-design-vue/lib/select';
-import { useMessage } from '@/hooks/web/useMessage';
-import { isString } from '@/utils/is';
+import { isString,isNumber,isNil } from '@/utils/is';
+import { uploadApi } from '@/api/fms/cloudFile';
 
 const { t } = useI18n();
 
@@ -250,8 +250,37 @@ export const searchFormSchema: FormSchema[] = [
   // },
   
 ];
+const isLv1orNil = (lv?: Number) => {
+  if (isNil(lv)) {
+    return true;
+  }
+  return lv === 1;
+};
+interface ParentUuidParams { 
+  page: number;
+  pageSize: number;
+  lv?: number;
 
+}
+const parentUuidParams:ParentUuidParams = {
+  page: 1,
+  pageSize: 1000,
+  lv:undefined,
+};
 export const formSchema: FormSchema[] = [
+  {
+    field: 'avatar',
+    label: t('sys.user.avatar'),
+    defaultValue: '',
+    component: 'CropperAvatar',
+    show: true,
+    componentProps: {
+      uploadApi: uploadApi,
+      btnText: t('sys.user.changeAvatar'),
+      width: 100,
+      formValueType: 'string',
+    },
+  },
   {
     field: 'id',
     label: 'ID',
@@ -290,20 +319,31 @@ export const formSchema: FormSchema[] = [
     field: 'homePath',
     label: t('agent.user.homePath'),
     component: 'Input',
+    defaultValue: '/dashboard',
     required: true,
     rules: [{ max: 70 }],
   },
   {
     field: 'roleIds',
     label: t('agent.user.roleIds'),
-    component: 'Input',
     required: true,
+    component: 'ApiMultipleSelect',
+    componentProps: {
+      // api: getRoleList,
+      params: {
+        page: 1,
+        pageSize: 100,
+      },
+      resultField: 'data.data',
+      labelField: 'trans',
+      valueField: 'id',
+    },
   },
   {
     field: 'mobile',
     label: t('agent.user.mobile'),
     component: 'Input',
-    required: true,
+    // required: true,
     rules: [{ max: 18 }],
   },
   {
@@ -313,61 +353,91 @@ export const formSchema: FormSchema[] = [
     required: true,
     rules: [{ max: 80 }],
   },
-  {
-    field: 'avatar',
-    label: t('agent.user.avatar'),
-    component: 'Input',
-    required: true,
-    rules: [{ max: 300 }],
-  },
-  {
-    field: 'departmentId',
-    label: t('agent.user.departmentId'),
-    component: 'InputNumber',
-    required: true,
-  },
-  {
-    field: 'positionIds',
-    label: t('agent.user.positionIds'),
-    component: 'Input',
-    required: true,
-  },
-  {
-    field: 'totpSecret',
-    label: t('agent.user.totpSecret'),
-    component: 'Input',
-    required: true,
-  },
+  // {
+  //   field: 'departmentId',
+  //   label: t('agent.user.departmentId'),
+  //   component: 'InputNumber',
+  //   required: true,
+  // },
+  // {
+  //   field: 'positionIds',
+  //   label: t('agent.user.positionIds'),
+  //   component: 'Input',
+  //   required: true,
+  // },
+  // {
+  //   field: 'totpSecret',
+  //   label: t('agent.user.totpSecret'),
+  //   component: 'Input',
+  //   required: true,
+  // },
   {
     field: 'lv',
     label: t('agent.user.lv'),
-    component: 'InputNumber',
+    component: 'DictionarySelect',
+    // defaultValue: 0,
+    componentProps: ({ schema, tableAction, formActionType, formModel }) => {
+      return {
+        dictionaryName: 'agentLv',
+        onOpitions: (options?: DefaultOptionType[]) => { // Add type annotation to options parameter
+    
+          options?.map((item) => {
+            item.value = Number(item.value);
+            return item;
+          });
+          return options;
+        },
+        onChange: (value,opitions) => {
+          if (isNumber(value) && value > 1) {
+            //查询上级代理
+            parentUuidParams.lv = value - 1;
+           
+          } else { 
+            parentUuidParams.lv = undefined;
+          }
+          
+        },
+      }
+    },
+    colProps: { span: 8 },
     required: true,
   },
   {
     field: 'parentUuid',
     label: t('agent.user.parentUuid'),
-    component: 'Input',
+    component: 'ApiSelect',
+    componentProps: ({ schema, tableAction, formActionType, formModel }) => {
+      return {
+        api: getAgentUserList,
+        params: parentUuidParams,
+        resultField: 'data.data',
+        labelField: 'username',
+        valueField: 'id',
+        alwaysLoad: true,
+      }
+    },
+   
     required: true,
+    ifShow: ({ values }) => !isLv1orNil(values.lv),
   },
-  {
-    field: 'lv1Uuid',
-    label: t('agent.user.lv1Uuid'),
-    component: 'Input',
-    required: true,
-  },
-  {
-    field: 'lv2Uuid',
-    label: t('agent.user.lv2Uuid'),
-    component: 'Input',
-    required: true,
-  },
-  {
-    field: 'lv3Uuid',
-    label: t('agent.user.lv3Uuid'),
-    component: 'Input',
-    required: true,
-  },
+  // {
+  //   field: 'lv1Uuid',
+  //   label: t('agent.user.lv1Uuid'),
+  //   component: 'Input',
+  //   required: true,
+  // },
+  // {
+  //   field: 'lv2Uuid',
+  //   label: t('agent.user.lv2Uuid'),
+  //   component: 'Input',
+  //   required: true,
+  // },
+  // {
+  //   field: 'lv3Uuid',
+  //   label: t('agent.user.lv3Uuid'),
+  //   component: 'Input',
+  //   required: true,
+  // },
   {
     field: 'status',
     label: t('agent.user.status'),
