@@ -1,13 +1,15 @@
 import { BasicColumn, FormSchema } from '@/components/Table';
 import { useI18n } from '@/hooks/web/useI18n';
 import { formatToDateTime } from '@/utils/dateUtil';
-import { updateAgentUser,getAgentUserList } from '@/api/agent/user';
-import { Switch,Tag } from 'ant-design-vue';
+import { updateAgentUser, getAgentUserList } from '@/api/agent/user';
+import { Switch, Tag } from 'ant-design-vue';
 import { h } from 'vue';
-import { DefaultOptionType } from 'ant-design-vue/lib/select';
-import { isString,isNumber,isNil } from '@/utils/is';
+import { isString, isNumber, isNil } from '@/utils/is';
 import { uploadApi } from '@/api/fms/cloudFile';
-
+import { getAgentRoleList } from '/@/api/agent/role';
+import { getAgentDepartmentList } from '/@/api/agent/department';
+import { getAgentPositionList } from '/@/api/agent/position';
+import { AgentRoleInfo } from '/@/api/agent//model/agentRoleModel';
 const { t } = useI18n();
 
 export const columns: BasicColumn[] = [
@@ -73,7 +75,7 @@ export const columns: BasicColumn[] = [
     customRender: ({ record }) => {
       let totpSecretText = '';
       let totpSecretColor = 'red';
-      if (isString(record.totpSecret)&&record.totpSecret.length>0) {
+      if (isString(record.totpSecret) && record.totpSecret.length > 0) {
         totpSecretText = t('agent.user.totpSecretAreadyBind');
         totpSecretColor = 'green';
       } else {
@@ -85,11 +87,11 @@ export const columns: BasicColumn[] = [
         {
           color: totpSecretColor,
         },
-        ()=>totpSecretText,
+        () => totpSecretText,
       );
     },
   },
-  
+
   {
     title: t('agent.user.lv'),
     dataIndex: 'lv',
@@ -159,21 +161,38 @@ export const columns: BasicColumn[] = [
 ];
 
 export const searchFormSchema: FormSchema[] = [
+  // {
+  //   field: 'lv',
+  //   label: t('agent.user.lv'),
+  //   component: 'DictionarySelect',
+  //   // defaultValue: 0,
+  //   componentProps: {
+  //     dictionaryName: 'agentLv',
+  //     onOpitions: (options?: DefaultOptionType[]) => {
+  //       // Add type annotation to options parameter
+
+  //       options?.map((item) => {
+  //         item.value = Number(item.value);
+  //         return item;
+  //       });
+  //       return options;
+  //     },
+  //   },
+  //   colProps: { span: 8 },
+  // },
   {
-    field: 'lv',
-    label: t('agent.user.lv'),
-    component: 'DictionarySelect',
-    // defaultValue: 0,
+    field: 'roleIds',
+    label: t('agent.user.roleIds'),
+    component: 'ApiMultipleSelect',
     componentProps: {
-      dictionaryName: 'agentLv',
-      onOpitions: (options?: DefaultOptionType[]) => { // Add type annotation to options parameter
-    
-        options?.map((item) => {
-          item.value = Number(item.value);
-         return item;
-        });
-        return options;
-      }
+      api: getAgentRoleList,
+      params: {
+        page: 1,
+        pageSize: 100,
+      },
+      resultField: 'data.data',
+      labelField: 'trans',
+      valueField: 'id',
     },
     colProps: { span: 8 },
   },
@@ -230,12 +249,7 @@ export const searchFormSchema: FormSchema[] = [
     colProps: { span: 8 },
     rules: [{ max: 100 }],
   },
-  // {
-  //   field: 'roleIds',
-  //   label: t('agent.user.roleIds'),
-  //   component: 'Input',
-  //   colProps: { span: 8 },
-  // },
+
   // {
   //   field: 'departmentId',
   //   label: t('agent.user.departmentId'),
@@ -248,24 +262,34 @@ export const searchFormSchema: FormSchema[] = [
   //   component: 'Input',
   //   colProps: { span: 8 },
   // },
-  
 ];
 const isLv1orNil = (lv?: Number) => {
   if (isNil(lv)) {
     return true;
   }
-  return lv === 1;
+  // if (lv === 0 || lv === 1) {
+  //   return true;
+  // }
+
+  return false;
 };
-interface ParentUuidParams { 
+interface ParentUuidParams {
   page: number;
   pageSize: number;
   lv?: number;
-
 }
-const parentUuidParams:ParentUuidParams = {
+const parentUuidParams: ParentUuidParams = {
   page: 1,
   pageSize: 1000,
-  lv:undefined,
+  lv: undefined,
+};
+
+const roleCode2LvMap = {
+  '001': 0,
+  '00201': 1,
+  '00202': 2,
+  '00203': 3,
+  '0020301': 4,
 };
 export const formSchema: FormSchema[] = [
   {
@@ -328,16 +352,129 @@ export const formSchema: FormSchema[] = [
     label: t('agent.user.roleIds'),
     required: true,
     component: 'ApiMultipleSelect',
-    componentProps: {
-      // api: getRoleList,
-      params: {
-        page: 1,
-        pageSize: 100,
-      },
-      resultField: 'data.data',
-      labelField: 'trans',
-      valueField: 'id',
+    componentProps: ({ schema, tableAction, formActionType, formModel }) => {
+      return {
+        api: getAgentRoleList,
+        params: {
+          page: 1,
+          pageSize: 100,
+        },
+        resultField: 'data.data',
+        labelField: 'trans',
+        valueField: 'id',
+
+        onSelect: (value: any, option: any) => {
+          console.log('onSelect roleIds', value);
+          console.log('onSelect roleIds', option);
+          const roleInfo: AgentRoleInfo = option;
+          let curLv: number | undefined = undefined;
+          if (!isNil(roleInfo.code) && roleInfo.code in roleCode2LvMap) {
+            console.log('onSelect roleIds roleInfo curLv ', roleCode2LvMap[roleInfo.code]);
+            curLv = roleCode2LvMap[roleInfo.code];
+          } else {
+            console.log('onSelect roleIds roleInfo curLv not found', roleInfo.code);
+            curLv = undefined;
+          }
+          formModel.lv = curLv;
+          if (isNumber(curLv) && curLv > 1) {
+            //查询上级代理
+            parentUuidParams.lv = curLv - 1;
+          } else {
+            parentUuidParams.lv = undefined;
+          }
+        },
+        onClear: () => {
+          console.log('onClear roleIds');
+          parentUuidParams.lv = undefined;
+          formModel.lv = undefined;
+        },
+      };
     },
+  },
+  {
+    field: 'lv',
+    label: t('agent.user.lv'),
+    component: 'InputNumber',
+    colProps: { span: 8 },
+    required: true,
+    show: false,
+  },
+  {
+    field: 'parentUuid',
+    label: t('agent.user.parentUuid'),
+    component: 'ApiSelect',
+    componentProps: ({ schema, tableAction, formActionType, formModel }) => {
+      return {
+        api: getAgentUserList,
+        params: parentUuidParams,
+        resultField: 'data.data',
+        labelField: 'username',
+        valueField: 'id',
+        alwaysLoad: true,
+        onSelect: (value: any, option: any) => {
+          console.log('onSelect parentUuid', value);
+          console.log('onSelect parentUuid', option);
+          formModel.parentUuid = value;
+          formModel.lv1Uuid = option.lv1Uuid;
+          formModel.lv2Uuid = option.lv2Uuid;
+          formModel.lv3Uuid = option.lv3Uuid;
+          switch (formModel.lv) {
+            case 0:
+              break;
+            case 1:
+              formModel.lv1Uuid = undefined;
+              formModel.lv2Uuid = undefined;
+              formModel.lv3Uuid = undefined;
+              break;
+            case 2:
+              formModel.lv1Uuid = value;
+              formModel.lv2Uuid = undefined;
+              formModel.lv3Uuid = undefined;
+              break;
+            case 3:
+              formModel.lv2Uuid = value;
+              formModel.lv3Uuid = undefined;
+              break;
+            case 4:
+              formModel.lv3Uuid = value;
+            default:
+              break;
+          }
+        },
+        onClear: () => {
+          console.log('onClear parentUuid');
+          formModel.parentUuid = undefined;
+          formModel.lv1Uuid = undefined;
+          formModel.lv2Uuid = undefined;
+          formModel.lv3Uuid = undefined;
+        },
+      };
+    },
+
+    required: false,
+    ifShow: ({ values }) => !isLv1orNil(values.lv),
+  },
+
+  {
+    field: 'lv1Uuid',
+    label: t('agent.user.lv1Uuid'),
+    component: 'Input',
+    required: false,
+    show: false,
+  },
+  {
+    field: 'lv2Uuid',
+    label: t('agent.user.lv2Uuid'),
+    component: 'Input',
+    required: false,
+    show: false,
+  },
+  {
+    field: 'lv3Uuid',
+    label: t('agent.user.lv3Uuid'),
+    component: 'Input',
+    required: false,
+    show: false,
   },
   {
     field: 'mobile',
@@ -353,88 +490,44 @@ export const formSchema: FormSchema[] = [
     required: true,
     rules: [{ max: 80 }],
   },
-  // {
-  //   field: 'departmentId',
-  //   label: t('agent.user.departmentId'),
-  //   component: 'InputNumber',
-  //   required: true,
-  // },
-  // {
-  //   field: 'positionIds',
-  //   label: t('agent.user.positionIds'),
-  //   component: 'Input',
-  //   required: true,
-  // },
+  {
+    field: 'departmentId',
+    label: t('sys.department.userDepartment'),
+    component: 'ApiTreeSelect',
+    required: true,
+    componentProps: {
+      api: getAgentDepartmentList,
+      params: {
+        page: 1,
+        pageSize: 1000,
+        name: '',
+        leader: '',
+      },
+      resultField: 'data.data',
+      labelField: 'trans',
+      valueField: 'id',
+    },
+  },
+  {
+    field: 'positionId',
+    label: t('sys.position.userPosition'),
+    component: 'ApiMultipleSelect',
+    required: true,
+    componentProps: {
+      api: getAgentPositionList,
+      params: {
+        page: 1,
+        pageSize: 1000,
+        name: '',
+      },
+      resultField: 'data.data',
+      labelField: 'trans',
+      valueField: 'id',
+    },
+  },
   // {
   //   field: 'totpSecret',
   //   label: t('agent.user.totpSecret'),
-  //   component: 'Input',
-  //   required: true,
-  // },
-  {
-    field: 'lv',
-    label: t('agent.user.lv'),
-    component: 'DictionarySelect',
-    // defaultValue: 0,
-    componentProps: ({ schema, tableAction, formActionType, formModel }) => {
-      return {
-        dictionaryName: 'agentLv',
-        onOpitions: (options?: DefaultOptionType[]) => { // Add type annotation to options parameter
-    
-          options?.map((item) => {
-            item.value = Number(item.value);
-            return item;
-          });
-          return options;
-        },
-        onChange: (value,opitions) => {
-          if (isNumber(value) && value > 1) {
-            //查询上级代理
-            parentUuidParams.lv = value - 1;
-           
-          } else { 
-            parentUuidParams.lv = undefined;
-          }
-          
-        },
-      }
-    },
-    colProps: { span: 8 },
-    required: true,
-  },
-  {
-    field: 'parentUuid',
-    label: t('agent.user.parentUuid'),
-    component: 'ApiSelect',
-    componentProps: ({ schema, tableAction, formActionType, formModel }) => {
-      return {
-        api: getAgentUserList,
-        params: parentUuidParams,
-        resultField: 'data.data',
-        labelField: 'username',
-        valueField: 'id',
-        alwaysLoad: true,
-      }
-    },
-   
-    required: true,
-    ifShow: ({ values }) => !isLv1orNil(values.lv),
-  },
-  // {
-  //   field: 'lv1Uuid',
-  //   label: t('agent.user.lv1Uuid'),
-  //   component: 'Input',
-  //   required: true,
-  // },
-  // {
-  //   field: 'lv2Uuid',
-  //   label: t('agent.user.lv2Uuid'),
-  //   component: 'Input',
-  //   required: true,
-  // },
-  // {
-  //   field: 'lv3Uuid',
-  //   label: t('agent.user.lv3Uuid'),
   //   component: 'Input',
   //   required: true,
   // },
