@@ -43,7 +43,7 @@ export const columns: BasicColumn[] = [
         loading: record.pendingStatus,
         onChange(checked, _) {
           const { createMessage } = useMessage();
-          if (record.id == 1) {
+          if (record.username === 'admin') {
             createMessage.warn(t('sys.role.adminStatusChangeForbidden'));
             return;
           }

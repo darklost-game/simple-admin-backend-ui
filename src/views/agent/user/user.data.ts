@@ -10,6 +10,8 @@ import { getAgentRoleList } from '/@/api/agent/role';
 import { getAgentDepartmentList } from '/@/api/agent/department';
 import { getAgentPositionList } from '/@/api/agent/position';
 import { AgentRoleInfo } from '/@/api/agent//model/agentRoleModel';
+import { useMessage } from '/@/hooks/web/useMessage';
+import { AgentRoleEnumLv } from '/@/enums/agentEnum';
 const { t } = useI18n();
 
 export const columns: BasicColumn[] = [
@@ -131,11 +133,11 @@ export const columns: BasicColumn[] = [
         unCheckedChildren: t('common.off'),
         loading: record.pendingStatus,
         onChange(checked, _) {
-          // const { createMessage } = useMessage();
-          // if (record.id == 1) {
-          //   createMessage.warn(t('sys.role.adminStatusChangeForbidden'));
-          //   return;
-          // }
+          const { createMessage } = useMessage();
+          if (record.username === 'admin') {
+            createMessage.warn(t('sys.role.adminStatusChangeForbidden'));
+            return;
+          }
 
           record.pendingStatus = true;
           const newStatus = checked ? 1 : 2;
@@ -284,13 +286,13 @@ const parentUuidParams: ParentUuidParams = {
   lv: undefined,
 };
 
-const roleCode2LvMap = {
-  '001': 0,
-  '00201': 1,
-  '00202': 2,
-  '00203': 3,
-  '0020301': 4,
-};
+// const roleCode2LvMap = {
+//   '001': 0,
+//   '00201': 1,
+//   '00202': 2,
+//   '00203': 3,
+//   '0020301': 4,
+// };
 export const formSchema: FormSchema[] = [
   {
     field: 'avatar',
@@ -368,9 +370,9 @@ export const formSchema: FormSchema[] = [
           console.log('onSelect roleIds', option);
           const roleInfo: AgentRoleInfo = option;
           let curLv: number | undefined = undefined;
-          if (!isNil(roleInfo.code) && roleInfo.code in roleCode2LvMap) {
-            console.log('onSelect roleIds roleInfo curLv ', roleCode2LvMap[roleInfo.code]);
-            curLv = roleCode2LvMap[roleInfo.code];
+          if (!isNil(roleInfo.code) && roleInfo.code in AgentRoleEnumLv) {
+            console.log('onSelect roleIds roleInfo curLv ', AgentRoleEnumLv[roleInfo.code]);
+            curLv = AgentRoleEnumLv[roleInfo.code];
           } else {
             console.log('onSelect roleIds roleInfo curLv not found', roleInfo.code);
             curLv = undefined;
