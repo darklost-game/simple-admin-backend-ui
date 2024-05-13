@@ -220,7 +220,7 @@ export const formSchema: FormSchema[] = [
     },
   },
   {
-    field: 'positionId',
+    field: 'positionIds',
     label: t('sys.position.userPosition'),
     component: 'ApiMultipleSelect',
     required: true,

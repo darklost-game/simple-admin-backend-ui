@@ -55,7 +55,7 @@
       async function handleSubmit() {
         const values = await validate();
         setDrawerProps({ confirmLoading: true });
-        values['id'] = unref(isUpdate) ? values['id'] : '';
+        values['id'] = unref(isUpdate) ? values['id'] : undefined;
         let result = unref(isUpdate)
           ? await updateAgentUser(values)
           : await createAgentUser(values);

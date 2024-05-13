@@ -9,8 +9,8 @@ const { t } = useI18n();
 
 export const columns: BasicColumn[] = [
   {
-    title: t('agent.token.uuid'),
-    dataIndex: 'uuid',
+    title: t('agent.token.uid'),
+    dataIndex: 'uid',
     width: 100,
   },
   {
@@ -79,20 +79,20 @@ export const searchFormSchema: FormSchema[] = [
   },
   {
     field: 'nickname',
-    label: t('agent.token.nickname'),
+    label: t('agent.user.nickname'),
     component: 'Input',
     colProps: { span: 8 },
   },
   {
     field: 'email',
-    label: t('agent.token.email'),
+    label: t('agent.user.email'),
     component: 'Input',
     colProps: { span: 8 },
   },
   {
-    field: 'uuid',
-    label: t('agent.token.uuid'),
-    component: 'Input',
+    field: 'uid',
+    label: t('agent.token.uid'),
+    component: 'InputNumber',
     colProps: { span: 8 },
   },
 ];
@@ -105,8 +105,8 @@ export const formSchema: FormSchema[] = [
     show: false,
   },
   {
-    field: 'uuid',
-    label: t('agent.token.uuid'),
+    field: 'uid',
+    label: t('agent.token.uid'),
     component: 'Input',
     required: true,
   },

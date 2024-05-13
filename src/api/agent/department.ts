@@ -4,7 +4,7 @@ import { BaseDataResp, BaseListReq, BaseResp, BaseIDsReq, BaseIDReq } from '@/ap
 import { AgentDepartmentInfo, AgentDepartmentListResp } from './model/agentDepartmentModel';
 
 enum Api {
-  GetAgentDepartmentList = '/agent-api/department/list',
+  GetAgentDepartmentList = '/agent-api/agent/department/list',
 }
 
 /**

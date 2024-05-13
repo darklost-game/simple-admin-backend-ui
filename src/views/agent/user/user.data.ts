@@ -100,23 +100,23 @@ export const columns: BasicColumn[] = [
     width: 100,
   },
   {
-    title: t('agent.user.parentUuid'),
-    dataIndex: 'parentUuid',
+    title: t('agent.user.parentUid'),
+    dataIndex: 'parentUid',
     width: 100,
   },
   {
-    title: t('agent.user.lv1Uuid'),
-    dataIndex: 'lv1Uuid',
+    title: t('agent.user.lv1Uid'),
+    dataIndex: 'lv1Uid',
     width: 100,
   },
   {
-    title: t('agent.user.lv2Uuid'),
-    dataIndex: 'lv2Uuid',
+    title: t('agent.user.lv2Uid'),
+    dataIndex: 'lv2Uid',
     width: 100,
   },
   {
-    title: t('agent.user.lv3Uuid'),
-    dataIndex: 'lv3Uuid',
+    title: t('agent.user.lv3Uid'),
+    dataIndex: 'lv3Uid',
     width: 100,
   },
   {
@@ -199,8 +199,8 @@ export const searchFormSchema: FormSchema[] = [
     colProps: { span: 8 },
   },
   {
-    field: 'parentUuid',
-    label: t('agent.user.parentUuid'),
+    field: 'parentUid',
+    label: t('agent.user.parentUid'),
     component: 'Input',
     colProps: { span: 8 },
   },
@@ -212,20 +212,20 @@ export const searchFormSchema: FormSchema[] = [
     rules: [{ max: 20 }],
   },
   {
-    field: 'lv1Uuid',
-    label: t('agent.user.lv1Uuid'),
+    field: 'lv1Uid',
+    label: t('agent.user.lv1Uid'),
     component: 'Input',
     colProps: { span: 8 },
   },
   {
-    field: 'lv2Uuid',
-    label: t('agent.user.lv2Uuid'),
+    field: 'lv2Uid',
+    label: t('agent.user.lv2Uid'),
     component: 'Input',
     colProps: { span: 8 },
   },
   {
-    field: 'lv3Uuid',
-    label: t('agent.user.lv3Uuid'),
+    field: 'lv3Uid',
+    label: t('agent.user.lv3Uid'),
     component: 'Input',
     colProps: { span: 8 },
   },
@@ -259,8 +259,8 @@ export const searchFormSchema: FormSchema[] = [
   //   colProps: { span: 8 },
   // },
   // {
-  //   field: 'positionId',
-  //   label: t('agent.user.positionId'),
+  //   field: 'positionIds',
+  //   label: t('agent.user.positionIds'),
   //   component: 'Input',
   //   colProps: { span: 8 },
   // },
@@ -275,12 +275,12 @@ const isLv1orNil = (lv?: Number) => {
 
   return false;
 };
-interface ParentUuidParams {
+interface ParentUidParams {
   page: number;
   pageSize: number;
   lv?: number;
 }
-const parentUuidParams: ParentUuidParams = {
+const parentUidParams: ParentUidParams = {
   page: 1,
   pageSize: 1000,
   lv: undefined,
@@ -310,7 +310,7 @@ export const formSchema: FormSchema[] = [
   {
     field: 'id',
     label: 'ID',
-    component: 'Input',
+    component: 'InputNumber',
     show: false,
   },
   {
@@ -331,7 +331,7 @@ export const formSchema: FormSchema[] = [
     field: 'password',
     label: t('agent.user.password'),
     component: 'Input',
-    required: true,
+    // required: true,
     rules: [{ min: 6 }],
   },
   {
@@ -380,14 +380,14 @@ export const formSchema: FormSchema[] = [
           formModel.lv = curLv;
           if (isNumber(curLv) && curLv > 1) {
             //查询上级代理
-            parentUuidParams.lv = curLv - 1;
+            parentUidParams.lv = curLv - 1;
           } else {
-            parentUuidParams.lv = undefined;
+            parentUidParams.lv = undefined;
           }
         },
         onClear: () => {
           console.log('onClear roleIds');
-          parentUuidParams.lv = undefined;
+          parentUidParams.lv = undefined;
           formModel.lv = undefined;
         },
       };
@@ -402,53 +402,53 @@ export const formSchema: FormSchema[] = [
     show: false,
   },
   {
-    field: 'parentUuid',
-    label: t('agent.user.parentUuid'),
+    field: 'parentUid',
+    label: t('agent.user.parentUid'),
     component: 'ApiSelect',
     componentProps: ({ schema, tableAction, formActionType, formModel }) => {
       return {
         api: getAgentUserList,
-        params: parentUuidParams,
+        params: parentUidParams,
         resultField: 'data.data',
         labelField: 'username',
         valueField: 'id',
         alwaysLoad: true,
         onSelect: (value: any, option: any) => {
-          console.log('onSelect parentUuid', value);
-          console.log('onSelect parentUuid', option);
-          formModel.parentUuid = value;
-          formModel.lv1Uuid = option.lv1Uuid;
-          formModel.lv2Uuid = option.lv2Uuid;
-          formModel.lv3Uuid = option.lv3Uuid;
+          console.log('onSelect parentUid', value);
+          console.log('onSelect parentUid', option);
+          formModel.parentUid = value;
+          formModel.lv1Uid = option.lv1Uid;
+          formModel.lv2Uid = option.lv2Uid;
+          formModel.lv3Uid = option.lv3Uid;
           switch (formModel.lv) {
             case 0:
               break;
             case 1:
-              formModel.lv1Uuid = undefined;
-              formModel.lv2Uuid = undefined;
-              formModel.lv3Uuid = undefined;
+              formModel.lv1Uid = undefined;
+              formModel.lv2Uid = undefined;
+              formModel.lv3Uid = undefined;
               break;
             case 2:
-              formModel.lv1Uuid = value;
-              formModel.lv2Uuid = undefined;
-              formModel.lv3Uuid = undefined;
+              formModel.lv1Uid = value;
+              formModel.lv2Uid = undefined;
+              formModel.lv3Uid = undefined;
               break;
             case 3:
-              formModel.lv2Uuid = value;
-              formModel.lv3Uuid = undefined;
+              formModel.lv2Uid = value;
+              formModel.lv3Uid = undefined;
               break;
             case 4:
-              formModel.lv3Uuid = value;
+              formModel.lv3Uid = value;
             default:
               break;
           }
         },
         onClear: () => {
-          console.log('onClear parentUuid');
-          formModel.parentUuid = undefined;
-          formModel.lv1Uuid = undefined;
-          formModel.lv2Uuid = undefined;
-          formModel.lv3Uuid = undefined;
+          console.log('onClear parentUid');
+          formModel.parentUid = undefined;
+          formModel.lv1Uid = undefined;
+          formModel.lv2Uid = undefined;
+          formModel.lv3Uid = undefined;
         },
       };
     },
@@ -458,23 +458,23 @@ export const formSchema: FormSchema[] = [
   },
 
   {
-    field: 'lv1Uuid',
-    label: t('agent.user.lv1Uuid'),
-    component: 'Input',
+    field: 'lv1Uid',
+    label: t('agent.user.lv1Uid'),
+    component: 'InputNumber',
     required: false,
     show: false,
   },
   {
-    field: 'lv2Uuid',
-    label: t('agent.user.lv2Uuid'),
-    component: 'Input',
+    field: 'lv2Uid',
+    label: t('agent.user.lv2Uid'),
+    component: 'InputNumber',
     required: false,
     show: false,
   },
   {
-    field: 'lv3Uuid',
-    label: t('agent.user.lv3Uuid'),
-    component: 'Input',
+    field: 'lv3Uid',
+    label: t('agent.user.lv3Uid'),
+    component: 'InputNumber',
     required: false,
     show: false,
   },
@@ -511,7 +511,7 @@ export const formSchema: FormSchema[] = [
     },
   },
   {
-    field: 'positionId',
+    field: 'positionIds',
     label: t('sys.position.userPosition'),
     component: 'ApiMultipleSelect',
     required: true,
