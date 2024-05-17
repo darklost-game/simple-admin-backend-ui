@@ -1,3 +1,5 @@
+import { initializeAgentDatabase } from '/@/api/agent/initialize';
+
 export default {
   api: {
     operationFailed: '操作失败',
@@ -217,6 +219,7 @@ export default {
     initService: '初始化服务名',
     initRedirect: '您将跳转到 <URL>:<Port>/<Service>/init/database',
     initOptional: '可选',
+    initAgentDatabase: '代理服务数据库初始化',
   },
   sys: {
     version: '系统版本',

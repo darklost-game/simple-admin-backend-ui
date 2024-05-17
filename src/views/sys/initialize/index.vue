@@ -10,6 +10,14 @@
         </ACard>
       </ACol>
       <ACol :span="6">
+        <ACard :title="t('sys.init.initAgentDatabase')" :hoverable="true">
+          <p>代理平台</p>
+          <a-button type="primary" :loading="agentInitButtonLoading" @click="initAgentDatabase">
+            {{ t('common.start') }}
+          </a-button>
+        </ACard>
+      </ACol>
+      <ACol :span="6">
         <ACard :title="t('sys.init.initFileDatabase')" :hoverable="true">
           <p><a href="https://github.com/suyuan32/simple-admin-file">File Manager Github</a></p>
           <a-button type="primary" :loading="fileInitButtonLoading" @click="initFileDatabase">
@@ -17,14 +25,7 @@
           </a-button>
         </ACard>
       </ACol>
-      <ACol :span="6">
-        <ACard :title="t('sys.init.initMMSDatabase')" :hoverable="true">
-          <p><a href="https://github.com/suyuan32/simple-admin-member-api">Member Github</a></p>
-          <a-button type="primary" :loading="mmsInitButtonLoading" @click="initMMSDatabase">
-            {{ t('common.start') }}
-          </a-button>
-        </ACard>
-      </ACol>
+
       <ACol :span="6">
         <ACard :title="t('sys.init.initJobDatabase')" :hoverable="true">
           <p><a href="https://github.com/suyuan32/simple-admin-job">Job Github</a></p>
@@ -37,6 +38,14 @@
         <ACard :title="t('sys.init.initMcmsDatabase')" :hoverable="true">
           <p><a href="https://github.com/suyuan32/simple-admin-message-center">Mcms Github</a></p>
           <a-button type="primary" :loading="mcmsInitButtonLoading" @click="initMcmsDatabase">
+            {{ t('common.start') }}
+          </a-button>
+        </ACard>
+      </ACol>
+      <ACol :span="6">
+        <ACard :title="t('sys.init.initMMSDatabase')" :hoverable="true">
+          <p><a href="https://github.com/suyuan32/simple-admin-member-api">Member Github</a></p>
+          <a-button type="primary" :loading="mmsInitButtonLoading" @click="initMMSDatabase">
             {{ t('common.start') }}
           </a-button>
         </ACard>
@@ -86,6 +95,7 @@
   } from '@/api/sys/initialize';
   import { initializeFileDatabase } from '@/api/fms/initialize';
   import { initializeMMSDatabase } from '@/api/member/initialize';
+  import { initializeAgentDatabase } from '@/api/agent/initialize';
 
   const { t } = useI18n();
   const ACard = Card;
@@ -100,6 +110,7 @@
   const customInitUrl = ref<string>('http://localhost');
   const customInitPort = ref<string>('9100');
   const customInitService = ref<string>('');
+  const agentInitButtonLoading = ref<boolean>(false);
 
   async function initCustomDatabase() {
     const serviceName: string = customInitService.value == '' ? '' : '/' + customInitService.value;
@@ -154,6 +165,15 @@
       message.success(result.msg, 3);
     }
     mcmsInitButtonLoading.value = false;
+  }
+
+  async function initAgentDatabase() {
+    agentInitButtonLoading.value = true;
+    const result = await initializeAgentDatabase();
+    if (result.code === 0) {
+      message.success(result.msg, 3);
+    }
+    agentInitButtonLoading.value = false;
   }
 </script>
 
