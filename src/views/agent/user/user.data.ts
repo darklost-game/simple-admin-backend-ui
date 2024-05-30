@@ -4,7 +4,7 @@ import { formatToDateTime } from '@/utils/dateUtil';
 import { updateAgentUser, getAgentUserList } from '@/api/agent/user';
 import { Switch, Tag } from 'ant-design-vue';
 import { h } from 'vue';
-import { isString, isNumber, isNil } from '@/utils/is';
+import { isString, isNumber, isNullish } from 'remeda';
 import { uploadApi } from '@/api/fms/cloudFile';
 import { getAgentRoleList } from '/@/api/agent/role';
 import { getAgentDepartmentList } from '/@/api/agent/department';
@@ -266,7 +266,7 @@ export const searchFormSchema: FormSchema[] = [
   // },
 ];
 const isLv1orNil = (lv?: Number) => {
-  if (isNil(lv)) {
+  if (isNullish(lv)) {
     return true;
   }
   // if (lv === 0 || lv === 1) {
@@ -370,7 +370,7 @@ export const formSchema: FormSchema[] = [
           console.log('onSelect roleIds', option);
           const roleInfo: AgentRoleInfo = option;
           let curLv: number | undefined = undefined;
-          if (!isNil(roleInfo.code) && roleInfo.code in AgentRoleEnumLv) {
+          if (!isNullish(roleInfo.code) && roleInfo.code in AgentRoleEnumLv) {
             console.log('onSelect roleIds roleInfo curLv ', AgentRoleEnumLv[roleInfo.code]);
             curLv = AgentRoleEnumLv[roleInfo.code];
           } else {

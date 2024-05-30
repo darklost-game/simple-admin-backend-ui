@@ -78,7 +78,7 @@
   import { columns, searchFormSchema } from './user.data';
   import { getAgentUserList, deleteAgentUser, updateAgentUser } from '@/api/agent/user';
   import { agentLogout } from '@/api/agent/token';
-  import { isString } from '@/utils/is';
+  import { isString } from 'remeda';
 
   export default defineComponent({
     name: 'UserManagement',
