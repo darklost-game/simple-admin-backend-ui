@@ -117,26 +117,27 @@ export const formSchema: FormSchema[] = [
     label: t('sys.department.ancestors'),
     component: 'Input',
     rules: [{ max: 200 }],
+    componentProps: {
+      disabled: true,
+    },
+    helpMessage: t('sys.department.ancestorsHelpMessage'),
   },
   {
     field: 'leader',
     label: t('sys.department.leader'),
     component: 'Input',
-    required: true,
     rules: [{ max: 20 }],
   },
   {
     field: 'phone',
     label: t('sys.department.phone'),
     component: 'Input',
-    required: true,
     rules: [{ max: 18 }],
   },
   {
     field: 'email',
     label: t('sys.department.email'),
     component: 'Input',
-    required: true,
     rules: [{ max: 70 }],
   },
   {
