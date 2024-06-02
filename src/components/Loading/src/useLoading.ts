@@ -47,7 +47,7 @@ export function useLoading(
   };
 
   tryOnUnmounted(() => {
-    instance.destory();
+    instance.destroy();
   });
 
   return [open, close, setTip];
